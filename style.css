@@ -1,0 +1,41 @@
+body {
+    font-family: Arial, sans-serif;
+    background-image: url(/img/fondo.jpg);
+}
+
+header {
+    background-color: green;
+    color: black;
+    text-align: center;
+    padding: 10px;
+}
+
+#productos, #carrito {
+    float: left;
+    width: 45%;
+    padding: 20px;
+    border: 1px solid #ddd;
+    margin: 10px;
+    background-color: green;
+    border: 1px solid green;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+button {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+}
