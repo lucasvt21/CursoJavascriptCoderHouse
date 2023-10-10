@@ -1,31 +1,46 @@
-const productos = [
-    { id: 1, nombre: "Manzanas", precio: 730 },
-    { id: 2, nombre: "Bananas", precio: 1050 },
-    { id: 3, nombre: "Zanahorias", precio: 650 },
-    { id: 4, nombre: 'Pepino', precio: 400 },
-    { id: 5, nombre: 'Berenjena', precio: 800 },
-    { id: 6, nombre: 'Tomate', precio: 850 },
-    { id: 7, nombre: 'Calabacin', precio: 750 },
-    { id: 8, nombre: 'Pimiento Verde', precio: 775 },
-    { id: 9, nombre: 'Opio', precio: 690 },
-];
+let productos = [];
+let carrito = [];
 
-const carrito = [];
+const getProductos = async () => {
+    try {
+        const response = await fetch("./JSON/productos.JSON");
+        const data = await response.json();
+        productos = data || [];
+        mostrarProductos(productos);
+    } catch (error) {
+        console.error("Error al obtener productos:", error);
+    }
+};
+
 let totalCompra = 0;
 
-function mostrarProductos() {
-    const listaProductos = document.getElementById("listaProductos");
-    listaProductos.innerHTML = "";
+const storedCarrito = localStorage.getItem("carrito");
+
+if (storedCarrito) {
+    carrito = JSON.parse(storedCarrito);
+    actualizarCarrito();
+}
+
+function mostrarProductos(productos) {
+    const gridProductos = document.getElementById("gridProductos");
     productos.forEach(producto => {
-        const li = document.createElement("li");
-        li.innerHTML = `${producto.nombre} - $${producto.precio.toFixed(2)} <button onclick="agregarAlCarrito(${producto.id})">Agregar al Carrito</button>`;
-        listaProductos.appendChild(li);
+        const div = document.createElement("div");
+        div.innerHTML = `<div class="producto-card">
+        <img src="${producto.img}" alt="${producto.nombre}" />
+        <p class="titulo-producto">${producto.nombre}</p> <p class = "precio-producto"> $${producto.precio.toFixed(2)}</p>
+        <button class="boton-producto" onclick="agregarAlCarrito(${producto.id})">Agregar al Carrito</button>
+        </div>`;
+        gridProductos.appendChild(div);
     });
 }
 
 function agregarAlCarrito(productoId) {
     const producto = productos.find(p => p.id === productoId);
-    carrito.push(producto);
+
+    const productoEnCarrito = carrito.find(p => p.id === productoId);
+
+    productoEnCarrito ? productoEnCarrito.cantidad++ : (producto.cantidad = 1, carrito.push(producto));
+
     totalCompra += producto.precio;
     actualizarCarrito();
 }
@@ -33,13 +48,25 @@ function agregarAlCarrito(productoId) {
 function actualizarCarrito() {
     const listaCarrito = document.getElementById("listaCarrito");
     listaCarrito.innerHTML = "";
+
+    let totalItems = 0;
+
     carrito.forEach(producto => {
         const li = document.createElement("li");
-        li.innerHTML = `${producto.nombre} - $${producto.precio.toFixed(2)} <button onclick="eliminarDelCarrito(${producto.id})">Eliminar</button>`;
+        li.innerHTML = `${producto.nombre} (x${producto.cantidad}) - $${(producto.precio * producto.cantidad).toFixed(2)} <button onclick="eliminarDelCarrito(${producto.id})">Eliminar</button>`;
         listaCarrito.appendChild(li);
+
+        totalItems += producto.cantidad;
     });
+
     const totalCompraElement = document.getElementById("totalCompra");
-    totalCompraElement.textContent = totalCompra.toFixed(2);
+
+    totalCompraElement && (totalCompraElement.textContent = totalCompra.toFixed(2));
+
+    const totalItemsElement = document.getElementById("totalItems");
+    totalItemsElement && (totalItemsElement.textContent = totalItems);
+
+    localStorage.setItem("carrito", JSON.stringify(carrito));
 }
 
 function eliminarDelCarrito(productoId) {
@@ -58,26 +85,25 @@ function vaciarCarrito() {
 }
 
 function finalizarCompra() {
-    if (carrito.length === 0) {
-        alert("Debes seleccionar al menos un producto antes de finalizar la compra.");
-        return;
-    }
+    carrito.length === 0
+        ? Swal.fire({
+            icon: 'error',
+            title: 'Problemas',
+            text: 'Tiene que seleccionar al menos un producto para realizar la compra.'
+        })
+        : Swal.fire({
+            icon: 'success',
+            title: 'La compra fue realizada con exitos.',
+            text: `Gracias por tu compra, Total: $${totalCompra.toFixed(2)}`
+        });
 
-    let nombreCliente;
-    
-    while (true) {
-        nombreCliente = prompt("Por favor, ingresa tu nombre:");
-        if (nombreCliente !== null && nombreCliente.trim() !== "") {
-            break;
-        }
-    }
-    
-    alert(`Gracias por tu compra, ${nombreCliente}. Total: $${totalCompra.toFixed(2)}`);
-    
     vaciarCarrito();
 }
 
-mostrarProductos();
-
 document.getElementById("vaciarCarrito").addEventListener("click", vaciarCarrito);
 document.getElementById("finalizarCompra").addEventListener("click", finalizarCompra);
+
+getProductos();
+
+
+/// En la siguiente entrega realizare todo lo faltante.
