@@ -51,7 +51,7 @@ function agregarAlCarrito(productoId) {
         productoEnCarrito.precioTotal += producto.precio;
     } else {
         producto.cantidad = 1;
-        producto.precioTotal = producto.precio; 
+        producto.precioTotal = producto.precio;
         carrito.push(producto);
     }
 
@@ -81,7 +81,7 @@ function actualizarCarrito() {
     totalItemsElement && (totalItemsElement.textContent = totalItems);
 
     localStorage.setItem("carrito", JSON.stringify(carrito));
-    localStorage.setItem("totalCompra", totalCompra.toString()); 
+    localStorage.setItem("totalCompra", totalCompra.toString());
 }
 
 function eliminarDelCarrito(productoId) {
@@ -126,4 +126,6 @@ function finalizarCompra() {
 document.getElementById("vaciarCarrito").addEventListener("click", vaciarCarrito);
 document.getElementById("finalizarCompra").addEventListener("click", finalizarCompra);
 
-getProductos();            
+getProductos();
+
+//ya no va a haber mas recreos! 
