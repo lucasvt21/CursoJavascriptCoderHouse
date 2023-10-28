@@ -3,7 +3,7 @@ let carrito = [];
 
 const getProductos = async () => {
     try {
-        const response = await fetch("./JSON/productos.JSON");
+        const response = await fetch("./JSON/productos.json");
         const data = await response.json();
         productos = data || [];
         mostrarProductos(productos);
@@ -15,6 +15,13 @@ const getProductos = async () => {
 let totalCompra = 0;
 
 const storedCarrito = localStorage.getItem("carrito");
+const storedTotalCompra = localStorage.getItem("totalCompra");
+
+if (storedCarrito) {
+    carrito = JSON.parse(storedCarrito);
+    totalCompra = parseFloat(storedTotalCompra);
+    actualizarCarrito();
+}
 
 if (storedCarrito) {
     carrito = JSON.parse(storedCarrito);
@@ -39,7 +46,14 @@ function agregarAlCarrito(productoId) {
 
     const productoEnCarrito = carrito.find(p => p.id === productoId);
 
-    productoEnCarrito ? productoEnCarrito.cantidad++ : (producto.cantidad = 1, carrito.push(producto));
+    if (productoEnCarrito) {
+        productoEnCarrito.cantidad++;
+        productoEnCarrito.precioTotal += producto.precio;
+    } else {
+        producto.cantidad = 1;
+        producto.precioTotal = producto.precio; 
+        carrito.push(producto);
+    }
 
     totalCompra += producto.precio;
     actualizarCarrito();
@@ -53,7 +67,7 @@ function actualizarCarrito() {
 
     carrito.forEach(producto => {
         const li = document.createElement("li");
-        li.innerHTML = `${producto.nombre} (x${producto.cantidad}) - $${(producto.precio * producto.cantidad).toFixed(2)} <button onclick="eliminarDelCarrito(${producto.id})">Eliminar</button>`;
+        li.innerHTML = `${producto.nombre} (x${producto.cantidad}) - $${producto.precioTotal.toFixed(2)} <button class="boton-eliminar" onclick="eliminarDelCarrito(${producto.id})">Eliminar</button>`;
         listaCarrito.appendChild(li);
 
         totalItems += producto.cantidad;
@@ -67,12 +81,21 @@ function actualizarCarrito() {
     totalItemsElement && (totalItemsElement.textContent = totalItems);
 
     localStorage.setItem("carrito", JSON.stringify(carrito));
+    localStorage.setItem("totalCompra", totalCompra.toString()); 
 }
 
 function eliminarDelCarrito(productoId) {
     const index = carrito.findIndex(p => p.id === productoId);
     if (index !== -1) {
-        const productoEliminado = carrito.splice(index, 1)[0];
+        const productoEliminado = carrito[index];
+
+        if (productoEliminado.cantidad > 1) {
+            productoEliminado.cantidad--;
+            productoEliminado.precioTotal -= productoEliminado.precio;
+        } else {
+            carrito.splice(index, 1);
+        }
+
         totalCompra -= productoEliminado.precio;
         actualizarCarrito();
     }
@@ -103,7 +126,4 @@ function finalizarCompra() {
 document.getElementById("vaciarCarrito").addEventListener("click", vaciarCarrito);
 document.getElementById("finalizarCompra").addEventListener("click", finalizarCompra);
 
-getProductos();
-
-
-/// En la siguiente entrega realizare todo lo faltante.
+getProductos();            
